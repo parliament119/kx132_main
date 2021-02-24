@@ -254,14 +254,14 @@ void kx132_trigger_mode(sw_config_t *softwareConfig, trigger_config_t* triggerCo
     //--- Variable Declarations & Memmory Allocation --------------------
     //-------------------------------------------------------------------
 
-    uint8_t 		xyzRawData		[NUMBER_OF_CHANNELS];
-    int16_t 		xyzFormatted	[NUMBER_OF_AXES];
-    ringbuffer_t 	xyzRingbuffer	[NUMBER_OF_AXES];
-    int16_t* 		xyzBuffer		[NUMBER_OF_AXES];
-    int16_t*		xyzReadBuffer	[NUMBER_OF_AXES];
+    uint8_t         xyzRawData      [NUMBER_OF_CHANNELS];
+    int16_t         xyzFormatted    [NUMBER_OF_AXES];
+    ringbuffer_t    xyzRingbuffer   [NUMBER_OF_AXES];
+    int16_t*        xyzBuffer       [NUMBER_OF_AXES];
+    int16_t*        xyzReadBuffer   [NUMBER_OF_AXES];
 
-    uint32_t 		samplesRead 	= 0;
-    bool 			triggerDetected = false;
+    uint32_t        samplesRead     = 0;
+    bool            triggerDetected = false;
 
 
     for(axis_t axis = 0; axis < NUMBER_OF_AXES ; axis++){
