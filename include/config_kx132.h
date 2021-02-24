@@ -197,38 +197,5 @@ void setOffsetThresholds(trigger_data_t* triggerData);
 void normalizeThresholds(readMode_sw_t readMode ,trigger_data_t* triggerData);
 
 
-/**
- * @brief Calculates needed samples before trigger.
- * 
- *  Based on frequency and time before trigger.
- *  Also refreshes the number of samples to be read from ringbuffer.
- * 
- * @param triggerInfo       pointer to struct containing the time related trigger settings
- */
-void setTriggerTimeSamplesBefore(trigger_info_t *triggerInfo);
-
-
-/**
- * @brief Calculates needed samples after trigger.
- * 
- *  Based on frequency and time after trigger.
- *  Also refreshes the number of samples to be read from ringbuffer.
- * 
- * @param triggerInfo       pointer to struct containing the time related trigger settings
- */
-void setTriggerTimeSamplesAfter(trigger_info_t *triggerInfo);
-
-
-/**
- * @brief Sets needed samples before + after trigger for reading form ringbuffer
- * 
- * @note Calls setTriggerTimeSamplesBefore() and setTriggerTimeSamplesAfter()
- * 
- * @param triggerInfo       pointer to struct containing the time related trigger settings
- */
-void setTriggerTimeSamples(trigger_info_t *triggerInfo);
-
-
-
 
 #endif // CONFIG_KX132_H

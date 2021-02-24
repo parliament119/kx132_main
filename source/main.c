@@ -53,10 +53,10 @@ int main(uint16_t argc, char* argv[]){
     
     hw_config_t 		hardwareConfig;
     sw_config_t 		softwareConfig;
-    trigger_config_t 	triggerConfig;
+    trigger_config_t    triggerConfig;
     trigger_data_t 		triggerData;
     
-    offsetThreshold_t 	offsetThreshold;
+    offsetThreshold_t   offsetThreshold;
     trigger_info_t 		triggerInfo;
     
     uint16_t 			offsetThresholds	[NUMBER_OF_AXES];
@@ -66,14 +66,14 @@ int main(uint16_t argc, char* argv[]){
     int16_t 			fixedThresholds		[NUMBER_OF_AXES];
     int16_t 			xyzNormalizedValues	[NUMBER_OF_AXES];
 
-    kx132_config.hardwareConfig					= &hardwareConfig;
-    kx132_config.softwareConfig					= &softwareConfig;
-    kx132_config.triggerConfig					= &triggerConfig;
-    kx132_config.triggerData					= &triggerData;
+    kx132_config.hardwareConfig                 = &hardwareConfig;
+    kx132_config.softwareConfig                 = &softwareConfig;
+    kx132_config.triggerConfig                  = &triggerConfig;
+    kx132_config.triggerData                    = &triggerData;
 
-    offsetThreshold.offsetThresholdValues		= offsetThresholds;
-    offsetThreshold.positiveThresholdValues		= positiveThresholds;
-    offsetThreshold.negativeThresholdValues		= negativeThresholds;
+    offsetThreshold.offsetThresholdValues       = offsetThresholds;
+    offsetThreshold.positiveThresholdValues     = positiveThresholds;
+    offsetThreshold.negativeThresholdValues     = negativeThresholds;
 
     triggerData.fixedThresholds					= fixedThresholds;
     triggerData.normalizedData					= xyzNormalizedValues;

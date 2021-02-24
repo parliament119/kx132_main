@@ -96,37 +96,6 @@ typedef struct{
 
 
 
-
-/**
- * @brief Checks whether axis triggered.
- * 
- * @note only called in Offset-Threshold-Mode
- * 
- * @param axis              which axis should be checked for trigger
- * @param formattedData     formatted int16_t data read from KX132 for corresponding axis
- * @param edgeDetection     positive / negative / both
- * @param offsetThreshold   pointer to struct containing threshold values
- * @return true             if trigger was detected
- * @return false            if trigger was not detected
- */
-bool detectOffsetTrigger(axis_t axis, int16_t formattedData, edge_detection_t edgeDetection ,offsetThreshold_t *offsetThreshold);
-
-
-/**
- * @brief Checks whether axis triggered.
- * 
- * @note only called in Fixed-Threshold-Mode
- * 
- * @param axis              which axis should be checked for trigger
- * @param formattedData     formatted int16_t data read from KX132 for corresponding axis 
- * @param edgeDetection     positive / negative / both
- * @param triggerData       pointer to struct containing threshold values and normalized axis data
- * @return true             if trigger was detected
- * @return false            if trigger was detected
- */
-bool detectFixedTrigger(axis_t axis, int16_t formattedData, edge_detection_t edgeDetection, trigger_data_t *triggerData);
-
-
 /**
  * @brief Checks all axes for trigger.
  * 

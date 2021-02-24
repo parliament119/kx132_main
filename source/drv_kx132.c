@@ -57,8 +57,8 @@ bool kx132_init(kx132_config_t* kx132_config){
     hw_config_t*	hardwareConfig 				= (hw_config_t*) kx132_config->hardwareConfig;
     sw_config_t*	softwareConfig 				= (sw_config_t*) kx132_config->softwareConfig;
 
-    uint8_t 		whoAmI_Register_Default 	= 0x3D;
-    uint8_t 		whoAmI_Register_Value 		= 0;
+    uint8_t 		whoAmI_Register_Default     = 0x3D;
+    uint8_t 		whoAmI_Register_Value       = 0;
 
     uint8_t 		manId_Register_Default[4];
     uint8_t 		manId_Register_Value[4];
@@ -143,9 +143,9 @@ bool kx_132_sync0_read_raw_data(uint8_t* xyzRawData){
 
 void *kx132_runtime_config(void *kx_config){
     
-    kx132_config_t		*kx132_config 	= (kx132_config_t*) kx_config;
-    trigger_config_t 	*triggerConfig 	= kx132_config->triggerConfig;
-    trigger_data_t   	*triggerData 	= kx132_config->triggerData;
+    kx132_config_t      *kx132_config 	= (kx132_config_t*) kx_config;
+    trigger_config_t    *triggerConfig 	= kx132_config->triggerConfig;
+    trigger_data_t      *triggerData 	= kx132_config->triggerData;
 
     #ifdef TCP_SERVER
         printf("[drv_kx132] Runtime Config listening.\n");
@@ -173,7 +173,7 @@ void *kx132_main_loop(void *kx_config){
     kx132_config_t 		*kx132_config 	= (kx132_config_t*) kx_config;
 
     sw_config_t 		*softwareConfig = kx132_config->softwareConfig;
-    trigger_config_t 	*triggerConfig 	= kx132_config->triggerConfig;
+    trigger_config_t    *triggerConfig 	= kx132_config->triggerConfig;
     trigger_data_t 		*triggerData 	= kx132_config->triggerData;
 
     if(softwareConfig->useMode == streaming_mode){
@@ -266,7 +266,7 @@ void kx132_trigger_mode(sw_config_t *softwareConfig, trigger_config_t* triggerCo
 
     for(axis_t axis = 0; axis < NUMBER_OF_AXES ; axis++){
 
-        xyzBuffer[axis] 	= (int16_t*) malloc(softwareConfig->bufferSize * sizeof(int16_t));
+        xyzBuffer[axis]     = (int16_t*) malloc(softwareConfig->bufferSize * sizeof(int16_t));
         xyzReadBuffer[axis] = (int16_t*) malloc(softwareConfig->bufferSize * sizeof(int16_t));
 
         if(xyzBuffer[axis] == NULL){
@@ -313,7 +313,7 @@ void kx132_trigger_mode(sw_config_t *softwareConfig, trigger_config_t* triggerCo
         if(triggerDetected){
 
             // push values that triggered the threshold and get index for reading data from ringbuffer
-            triggerConfig->triggerInfo->triggerIndex	=	rb_push(&xyzRingbuffer[X_INDEX], xyzFormatted[X_INDEX]);
+            triggerConfig->triggerInfo->triggerIndex	=   rb_push(&xyzRingbuffer[X_INDEX], xyzFormatted[X_INDEX]);
                                                             rb_push(&xyzRingbuffer[Y_INDEX], xyzFormatted[Y_INDEX]);
                                                             rb_push(&xyzRingbuffer[Z_INDEX], xyzFormatted[Z_INDEX]);
             

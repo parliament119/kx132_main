@@ -13,9 +13,9 @@
 
 #define ARRAY_SIZE(array)   ( (sizeof(array)) / (sizeof(array[0])) )
 
-#define X_INDEX				0
-#define Y_INDEX				1
-#define Z_INDEX				2
+#define X_INDEX             0
+#define Y_INDEX             1
+#define Z_INDEX             2
 #define NUMBER_OF_AXES		3
 #define NUMBER_OF_CHANNELS	6
 
@@ -27,7 +27,7 @@
 #define Z_LOW_CHANNEL		4
 #define Z_HIGH_CHANNEL		5
 
-///< enum for 3 axes
+/// enum for 3 axes
 typedef enum{
     X_AXIS = X_INDEX,
     Y_AXIS = Y_INDEX,
