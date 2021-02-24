@@ -610,12 +610,12 @@ void setOffsetThresholds(trigger_data_t* triggerData){
 
 void normalizeThresholds(readMode_sw_t readMode ,trigger_data_t* triggerData){
 
-	uint8_t     xyzRawData      [NUMBER_OF_CHANNELS];
-	int16_t     xyzFormatted    [NUMBER_OF_AXES];
+    uint8_t     xyzRawData      [NUMBER_OF_CHANNELS];
+    int16_t     xyzFormatted    [NUMBER_OF_AXES];
 
-	int32_t     xSum            = 0;
-	int32_t     ySum            = 0;
-	int32_t     zSum            = 0;
+    int32_t     xSum            = 0;
+    int32_t     ySum            = 0;
+    int32_t     zSum            = 0;
     uint32_t    count           = 0;
 
     if(readMode == synchronous_read_0){
@@ -649,8 +649,8 @@ void normalizeThresholds(readMode_sw_t readMode ,trigger_data_t* triggerData){
         }
     }
 
-	triggerData->normalizedData[X_INDEX] = xSum / NUM_NORMALIZE_SAMPLES;
-	triggerData->normalizedData[Y_INDEX] = ySum / NUM_NORMALIZE_SAMPLES;
-	triggerData->normalizedData[Z_INDEX] = zSum / NUM_NORMALIZE_SAMPLES;
+    triggerData->normalizedData[X_INDEX] = xSum / NUM_NORMALIZE_SAMPLES;
+    triggerData->normalizedData[Y_INDEX] = ySum / NUM_NORMALIZE_SAMPLES;
+    triggerData->normalizedData[Z_INDEX] = zSum / NUM_NORMALIZE_SAMPLES;
 
 }

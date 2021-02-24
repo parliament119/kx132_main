@@ -29,9 +29,9 @@
 
 ///< enum for 3 axes
 typedef enum{
-	X_AXIS = X_INDEX,
-	Y_AXIS = Y_INDEX,
-	Z_AXIS = Z_INDEX
+    X_AXIS = X_INDEX,
+    Y_AXIS = Y_INDEX,
+    Z_AXIS = Z_INDEX
 } axis_t;
 
 

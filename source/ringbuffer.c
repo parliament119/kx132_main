@@ -26,9 +26,9 @@ bool rb_init(ringbuffer_t *rb, int16_t *buffer, uint32_t size){
     rb->index   = 0;
 
     if((rb->size & (rb->size - 1)) != 0) {
-		printf("[ringbuffer][error] size of ringbuffer is not power of two\n");
+        printf("[ringbuffer][error] size of ringbuffer is not power of two\n");
         return false;
-	}
+    }
 
     return true;
 }
@@ -36,25 +36,25 @@ bool rb_init(ringbuffer_t *rb, int16_t *buffer, uint32_t size){
 
 bool rb_xyz_init(ringbuffer_t *rb, int16_t **buffer, uint32_t size){
 
-	if(!rb_init(&rb[X_INDEX], buffer[X_INDEX], size)){
-		printf("[ringbuffer][error] Ringbuffer X could not be initialized.\n");
-		return false;
-	}
-	if(!rb_init(&rb[Y_INDEX], buffer[Y_INDEX], size)){
-		printf("[ringbuffer][error] Ringbuffer Y could not be initialized.\n");
-		return false;
-	}
-	if(!rb_init(&rb[Z_INDEX], buffer[Z_INDEX], size)){
-		printf("[ringbuffer][error] Ringbuffer Z could not be initialized.\n");
-		return false;
-	}
+    if(!rb_init(&rb[X_INDEX], buffer[X_INDEX], size)){
+        printf("[ringbuffer][error] Ringbuffer X could not be initialized.\n");
+        return false;
+    }
+    if(!rb_init(&rb[Y_INDEX], buffer[Y_INDEX], size)){
+        printf("[ringbuffer][error] Ringbuffer Y could not be initialized.\n");
+        return false;
+    }
+    if(!rb_init(&rb[Z_INDEX], buffer[Z_INDEX], size)){
+        printf("[ringbuffer][error] Ringbuffer Z could not be initialized.\n");
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 
 void rb_reset(ringbuffer_t *rb){
-	rb->index = 0;
+    rb->index = 0;
 }
 
 uint32_t rb_size(ringbuffer_t *rb){
@@ -64,12 +64,12 @@ uint32_t rb_size(ringbuffer_t *rb){
 
 uint32_t rb_push(ringbuffer_t* rb, int16_t data){
 
-	uint32_t localIndex     = rb->index & rb->modulo;
-	rb->buffer[localIndex]  = data;
+    uint32_t localIndex     = rb->index & rb->modulo;
+    rb->buffer[localIndex]  = data;
 
-	rb->index++;
+    rb->index++;
 
-	return localIndex;
+    return localIndex;
 }
 
 
