@@ -45,26 +45,26 @@ int main(uint16_t argc, char* argv[]){
     //-------------------------------------------------------------------
 
     // Declaration of variables for threading
-    pthread_t			threadMainLoop;
-    pthread_t			threadRuntimeConfig;
+    pthread_t           threadMainLoop;
+    pthread_t           threadRuntimeConfig;
 
     // Declaration of variables for hardware-, software- and trigger-config
-    kx132_config_t 		kx132_config;
+    kx132_config_t      kx132_config;
     
-    hw_config_t 		hardwareConfig;
-    sw_config_t 		softwareConfig;
+    hw_config_t         hardwareConfig;
+    sw_config_t         softwareConfig;
     trigger_config_t    triggerConfig;
-    trigger_data_t 		triggerData;
+    trigger_data_t      triggerData;
     
     offsetThreshold_t   offsetThreshold;
-    trigger_info_t 		triggerInfo;
+    trigger_info_t      triggerInfo;
     
-    uint16_t 			offsetThresholds	[NUMBER_OF_AXES];
-    int32_t 			positiveThresholds	[NUMBER_OF_AXES];
-    int32_t 			negativeThresholds	[NUMBER_OF_AXES];
+    uint16_t            offsetThresholds	[NUMBER_OF_AXES];
+    int32_t             positiveThresholds	[NUMBER_OF_AXES];
+    int32_t             negativeThresholds	[NUMBER_OF_AXES];
 
-    int16_t 			fixedThresholds		[NUMBER_OF_AXES];
-    int16_t 			xyzNormalizedValues	[NUMBER_OF_AXES];
+    int16_t             fixedThresholds		[NUMBER_OF_AXES];
+    int16_t             xyzNormalizedValues	[NUMBER_OF_AXES];
 
     kx132_config.hardwareConfig                 = &hardwareConfig;
     kx132_config.softwareConfig                 = &softwareConfig;
@@ -75,11 +75,11 @@ int main(uint16_t argc, char* argv[]){
     offsetThreshold.positiveThresholdValues     = positiveThresholds;
     offsetThreshold.negativeThresholdValues     = negativeThresholds;
 
-    triggerData.fixedThresholds					= fixedThresholds;
-    triggerData.normalizedData					= xyzNormalizedValues;
-    triggerData.offsetThreshold					= &offsetThreshold;
+    triggerData.fixedThresholds                 = fixedThresholds;
+    triggerData.normalizedData                  = xyzNormalizedValues;
+    triggerData.offsetThreshold                 = &offsetThreshold;
 
-    triggerConfig.triggerInfo					= &triggerInfo;
+    triggerConfig.triggerInfo                   = &triggerInfo;
 
 
     //-------------------------------------------------------------------

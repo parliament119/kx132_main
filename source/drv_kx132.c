@@ -54,8 +54,8 @@ void kx132_trigger_mode(sw_config_t *softwareConfig, trigger_config_t *triggerCo
 
 bool kx132_init(kx132_config_t* kx132_config){
 
-    hw_config_t*	hardwareConfig 				= (hw_config_t*) kx132_config->hardwareConfig;
-    sw_config_t*	softwareConfig 				= (sw_config_t*) kx132_config->softwareConfig;
+    hw_config_t*	hardwareConfig              = (hw_config_t*) kx132_config->hardwareConfig;
+    sw_config_t*	softwareConfig              = (sw_config_t*) kx132_config->softwareConfig;
 
     uint8_t 		whoAmI_Register_Default     = 0x3D;
     uint8_t 		whoAmI_Register_Value       = 0;
@@ -170,11 +170,11 @@ void *kx132_runtime_config(void *kx_config){
 
 void *kx132_main_loop(void *kx_config){
 
-    kx132_config_t 		*kx132_config 	= (kx132_config_t*) kx_config;
+    kx132_config_t      *kx132_config 	= (kx132_config_t*) kx_config;
 
-    sw_config_t 		*softwareConfig = kx132_config->softwareConfig;
+    sw_config_t         *softwareConfig = kx132_config->softwareConfig;
     trigger_config_t    *triggerConfig 	= kx132_config->triggerConfig;
-    trigger_data_t 		*triggerData 	= kx132_config->triggerData;
+    trigger_data_t      *triggerData 	= kx132_config->triggerData;
 
     if(softwareConfig->useMode == streaming_mode){
         kx132_streaming_mode(softwareConfig->readMode);
@@ -195,11 +195,11 @@ void kx132_streaming_mode(readMode_sw_t readMode){
     //--- Variable Declarations  ----------------------------------------
     //-------------------------------------------------------------------
 
-    uint8_t 	xyzRawData		[NUMBER_OF_CHANNELS];
-    int16_t 	xyzFormatted	[2][NUMBER_OF_AXES];
+    uint8_t     xyzRawData      [NUMBER_OF_CHANNELS];
+    int16_t     xyzFormatted    [2][NUMBER_OF_AXES];
 
-    uint64_t 	count 			= 0;
-    uint8_t 	activeBuffer 	= 0;
+    uint64_t    count           = 0;
+    uint8_t     activeBuffer    = 0;
 
 
     for(uint8_t i = 0; i < NUMBER_OF_AXES; i++){

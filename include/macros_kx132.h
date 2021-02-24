@@ -16,16 +16,16 @@
 #define X_INDEX             0
 #define Y_INDEX             1
 #define Z_INDEX             2
-#define NUMBER_OF_AXES		3
-#define NUMBER_OF_CHANNELS	6
+#define NUMBER_OF_AXES      3
+#define NUMBER_OF_CHANNELS  6
 
 
-#define X_LOW_CHANNEL		0
-#define X_HIGH_CHANNEL		1
-#define Y_LOW_CHANNEL		2
-#define Y_HIGH_CHANNEL		3
-#define Z_LOW_CHANNEL		4
-#define Z_HIGH_CHANNEL		5
+#define X_LOW_CHANNEL       0
+#define X_HIGH_CHANNEL      1
+#define Y_LOW_CHANNEL       2
+#define Y_HIGH_CHANNEL      3
+#define Z_LOW_CHANNEL       4
+#define Z_HIGH_CHANNEL      5
 
 /// enum for 3 axes
 typedef enum{
