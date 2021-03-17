@@ -74,7 +74,7 @@ static const char* yFixedThres_Flag    = "-yF";
 static const char* zFixedThres_Flag    = "-zF";
 
 
-static const double outputDataRate_double[16] = {0.781, 1.563, 3.125, 6.25, 12.5, 25, 50, 100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600};
+static const double outputDataRate_double_list[16] = {0.781, 1.563, 3.125, 6.25, 12.5, 25, 50, 100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600};
 
 static const trigger_bitmask_t triggerBitmaskList[7] = {
     x_trigger,
@@ -129,20 +129,17 @@ static void setTriggerTimeSamples(trigger_info_t *triggerInfo);
 
 void kx132_config_init(uint16_t argc, char *argv[], kx132_config_t *kx132_config){
 
-    hw_config_t*        hardwareConfig   =  kx132_config->hardwareConfig;
-    sw_config_t*        softwareConfig   =  kx132_config->softwareConfig;
-    trigger_config_t*   triggerConfig    =  kx132_config->triggerConfig;
-    trigger_data_t*     triggerData      =  kx132_config->triggerData;
+    main_config_t*      mainConfig      =  kx132_config->mainConfig;
+    trigger_config_t*   triggerConfig   =  kx132_config->triggerConfig;
+    trigger_data_t*     triggerData     =  kx132_config->triggerData;
 
 
-    hardwareConfig->outputDataRate_hw                               = odr_25600_Hz;
-    hardwareConfig->resolution_hw                                   = resolution_16bit;
-    hardwareConfig->readMode_hw                                     = synchronous_read_hw_0;
-    hardwareConfig->gRange_hw                                       = g_range_8g;
-
-    softwareConfig->useMode                                         = triggered_mode;
-    softwareConfig->readMode                                        = synchronous_read_0;
-    softwareConfig->bufferSize                                      = DEFAULT_BUFFER_SIZE;
+    mainConfig->outputDataRate_hw                                   = odr_25600_Hz;
+    mainConfig->resolution_hw                                       = resolution_16bit;
+    mainConfig->readMode_hw                                         = synchronous_read_0;
+    mainConfig->gRange_hw                                           = g_range_8g;
+    mainConfig->useMode                                             = triggered_mode;
+    mainConfig->bufferSize                                          = DEFAULT_BUFFER_SIZE;
 
     triggerConfig->triggerMode                                      = fixedTriggerMode;
     triggerConfig->edgeDetection                                    = detectBoth;
@@ -152,7 +149,7 @@ void kx132_config_init(uint16_t argc, char *argv[], kx132_config_t *kx132_config
     triggerConfig->triggerInfo->timeBeforeTrig                      = DEFAULT_TIME;
     triggerConfig->triggerInfo->timeAfterTrig                       = DEFAULT_TIME;
     triggerConfig->triggerInfo->triggerIndex                        = ZERO;
-    triggerConfig->triggerInfo->outputDataRate                      = outputDataRate_double[hardwareConfig->outputDataRate_hw];
+    triggerConfig->triggerInfo->outputDataRate                      = outputDataRate_double[mainConfig->outputDataRate_hw];
 
     triggerData->normalizedData[X_AXIS]                             = DEFAULT_NORMALIZED;
     triggerData->normalizedData[Y_AXIS]                             = DEFAULT_NORMALIZED;
@@ -169,7 +166,7 @@ void kx132_config_init(uint16_t argc, char *argv[], kx132_config_t *kx132_config
 
     // process user input coming from console and set config accordingly
     if(argc > 1){
-        processInitFlags(argc, argv, hardwareConfig, softwareConfig, triggerConfig, triggerData);
+        processInitFlags(argc, argv, mainConfig, triggerConfig, triggerData);
     }
 
     setTriggerTimeSamples(triggerConfig->triggerInfo);
@@ -179,8 +176,7 @@ void kx132_config_init(uint16_t argc, char *argv[], kx132_config_t *kx132_config
 
 void processInitFlags(  uint16_t            argc,
                         char                *argv[],
-                        hw_config_t         *hardwareConfig,
-                        sw_config_t         *softwareConfig,
+                        main_config_t       *mainConfig,
                         trigger_config_t    *triggerConfig,
                         trigger_data_t      *triggerData)
 {
@@ -234,11 +230,11 @@ void processInitFlags(  uint16_t            argc,
         //---------------------
         if (!strncmp(argv[i], mode_Flag, strlen(mode_Flag))){
             if(!strncmp(argv[i+1], modeStream_Arg, strlen(modeStream_Arg))){
-                softwareConfig->useMode = streaming_mode;
+                mainConfig->useMode = streaming_mode;
                 i++; // increment i by 1, in case it was a correct argument for the flag
             }
             else if(!strncmp(argv[i+1], modeTrig_Arg, strlen(modeTrig_Arg))){
-                softwareConfig->useMode = triggered_mode;
+                mainConfig->useMode = triggered_mode;
                 i++;
             }
         }
@@ -248,8 +244,8 @@ void processInitFlags(  uint16_t            argc,
         //---------------------
         if(!strncmp(argv[i], odr_Flag, strlen(odr_Flag))){
             if(sscanf(argv[i+1], "%d", &intArgValue) == 1){
-                hardwareConfig->outputDataRate_hw          = outputDataRateList[intArgValue];
-                triggerConfig->triggerInfo->outputDataRate = outputDataRate_double[intArgValue];
+                mainConfig->outputDataRate_hw       = outputDataRateList[intArgValue];
+                triggerConfig->triggerInfo->outputDataRate = outputDataRate_double_list[intArgValue];
                 i++;
             }
         }
@@ -261,11 +257,11 @@ void processInitFlags(  uint16_t            argc,
         // if(!strncmp(argv[i], resolution_Flag, strlen(resolution_Flag))){
         //     if(sscanf(argv[i+1], "%d", &intArgValue) == 1){
         //         if(intArgValue == RESO_8_BIT){
-        //             harwareConfig->resolution = resolution_8bit;
+        //             mainConfig->resolution_hw = resolution_8bit;
         //             i++; 
         //         }
         //         else if(intArgValue == RESO_16_BIT){
-        //             hardwareConfig->resolution = resolution_16bit;
+        //             mainConfig->resolution_hw = resolution_16bit;
         //             i++; 
         //         }
         //     }
@@ -277,20 +273,17 @@ void processInitFlags(  uint16_t            argc,
         if (!strncmp(argv[i], readMode_Flag, strlen(readMode_Flag))){
 
             if(!strncmp(argv[i+1], readSync0_Arg, strlen(readSync0_Arg))){
-                hardwareConfig->readMode_hw = synchronous_read_hw_0;
-                softwareConfig->readMode    = synchronous_read_0;
+                mainConfig->readMode_hw = synchronous_read_0;
                 i++;
             }
 
             // else if(!strncmp(argv[i+1], readSync1_Arg, strlen(readSync1_Arg))){
-            //     hardwareConfig->readMode_hw = synchronous_read_hw_1;
-            //     softwareConfig->readMode    = synchronous_read_1;
+            //     mainConfig->readMode_hw = synchronous_read_1;
             //     i++;
             // }
 
             else if(!strncmp(argv[i+1], readAsync_Arg, strlen(readAsync_Arg))){
-                hardwareConfig->readMode_hw = asynchronous_hw_read;
-                softwareConfig->readMode    = asynchronous_read;
+                mainConfig->readMode_hw = asynchronous_read;
                 i++;
             }
         }
@@ -301,19 +294,19 @@ void processInitFlags(  uint16_t            argc,
         if(!strncmp(argv[i], gRange_Flag, strlen(gRange_Flag))){
             if(sscanf(argv[i+1], "%d", &intArgValue) == 1){
                 if(intArgValue == G_RANGE_2){
-                    hardwareConfig->gRange_hw = g_range_2g;
+                    mainConfig->gRange_hw = g_range_2g;
                     i++;
                 }
                 else if(intArgValue == G_RANGE_4){
-                    hardwareConfig->gRange_hw = g_range_4g;
+                    mainConfig->gRange_hw = g_range_4g;
                     i++;
                 }
                 else if(intArgValue == G_RANGE_8){
-                    hardwareConfig->gRange_hw = g_range_8g;
+                    mainConfig->gRange_hw = g_range_8g;
                     i++;
                 }
                 else if(intArgValue == G_RANGE_16){
-                    hardwareConfig->gRange_hw = g_range_16g;
+                    mainConfig->gRange_hw = g_range_16g;
                     i++;
                 }
             }
@@ -643,7 +636,7 @@ void setOffsetThresholds(trigger_data_t* triggerData){
 }
 
 
-void normalizeThresholds(readMode_sw_t readMode ,trigger_data_t* triggerData){
+void normalizeThresholds(readMode_hw_t readMode, trigger_data_t* triggerData){
 
     uint8_t     xyzRawData      [NUMBER_OF_CHANNELS];
     int16_t     xyzFormatted    [NUMBER_OF_AXES];

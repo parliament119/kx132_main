@@ -73,9 +73,9 @@ typedef enum{
 
 ///< enum for hardware config of read mode (async/sync)
 typedef enum{
-    synchronous_read_hw_0   = 0,                    ///< No Hardware Interrupt. Syncing through SPI. Uses DataReady-Bit in INS2_REG.
-//  synchronous_read_hw_1   = 1,                    ///< Hardware Interrupt. Syncing through INT1-PIN of KX132. //! Not implemented.
-    asynchronous_hw_read    = 2,                    ///< Asynchronous Read of Raw Data.
+    synchronous_read_0   = 0,                       ///< No Hardware Interrupt. Syncing through SPI. Uses DataReady-Bit in INS2_REG.
+//  synchronous_read_1   = 1,                       ///< Hardware Interrupt. Syncing through INT1-PIN of KX132. //! Not implemented.
+    asynchronous_read    = 2,                       ///< Asynchronous Read of Raw Data.
 } readMode_hw_t;
 
 
@@ -95,36 +95,20 @@ typedef enum{
 } useMode_t;
 
 
-///< enum for software config of read mode (async/sync)
-typedef enum{
-    synchronous_read_0      = 0,                    ///< No Hardware Interrupt. Syncing through SPI. 
-//  synchronous_read_1      = 1,                    ///< Hardware Interrupt. Syncing through INT1-PIN of KX132. //! Not implemented.
-    asynchronous_read       = 2,                    ///< Asynchronous Read of Raw Data.
-} readMode_sw_t;
-
-
-/// struct holding hardware configuration used for initializing KX132
+/// struct holding configuration used for initializing KX132 and software configuration during runtime
 typedef struct{
-    outputDataRate_hw_t     outputDataRate_hw;      ///< frequency for KX132
+    outputDataRate_hw_t     outputDataRate_hw;      ///< frequency-setting for KX132 (Range: 0x0 - 0xF)
     resolution_hw_t         resolution_hw;          ///< resolution of KX132 output (8-Bit/16-Bit) //! Not implemented.
     readMode_hw_t           readMode_hw;            ///< depending on config turns "Data Ready Engine" on or off
     gRange_hw_t             gRange_hw;              ///< sensitivity of KX132 (higher g >> lower sensitivity)
-} hw_config_t;
-
-
-/// struct holding software configuration used during execution
-typedef struct{
     useMode_t               useMode;                ///< streaming / trigger
-    readMode_sw_t           readMode;               ///< async / sync0
     uint32_t                bufferSize;             ///< buffersize for allocating memory of ringbuffer
-} sw_config_t;
+} main_config_t;
 
 
-/// "main" struct holding every other config struct for passing to threaded functions
-// Don't like the idea of this struct that bundles basically everything. Need it for passing to threaded function though.
+/// struct holding every other config struct for passing to threaded functions
 typedef struct{
-    hw_config_t*            hardwareConfig;
-    sw_config_t*            softwareConfig;
+    main_config_t*          mainConfig;
     trigger_config_t*       triggerConfig;
     trigger_data_t*         triggerData;
 } kx132_config_t;
@@ -150,15 +134,13 @@ void kx132_config_init(uint16_t argc, char *argv[], kx132_config_t *kx132_config
  * 
  * @param argc              console input argument count passed from main()
  * @param argv              console input arguments passed from main()
- * @param hardwareConfig    pointer to struct containing hardware setting
- * @param softwareConfig    pointer to struct containing software setting
+ * @param mainConfig        pointer to struct containing hardware + software setting
  * @param triggerConfig     pointer to struct containing trigger settings
  * @param triggerData       pointer to struct containing trigger data (thresholds + normalized)
  */
 void processInitFlags(  uint16_t            argc,
                         char                *argv[],
-                        hw_config_t         *hardwareConfig,
-                        sw_config_t         *softwareConfig,
+                        main_config_t       *mainConfig,
                         trigger_config_t    *triggerConfig,
                         trigger_data_t      *triggerData);
 
@@ -194,7 +176,7 @@ void setOffsetThresholds(trigger_data_t* triggerData);
  * @param readMode          readMode Flag to read through sync0/async
  * @param triggerData       pointer to struct containing the normalized data
  */
-void normalizeThresholds(readMode_sw_t readMode ,trigger_data_t* triggerData);
+void normalizeThresholds(readMode_hw_t readMode ,trigger_data_t* triggerData);
 
 
 
