@@ -51,8 +51,7 @@ int main(uint16_t argc, char* argv[]){
     // Declaration of variables for hardware-, software- and trigger-config
     kx132_config_t      kx132_config;
     
-    hw_config_t         hardwareConfig;
-    sw_config_t         softwareConfig;
+    main_config_t       mainConfig;
     trigger_config_t    triggerConfig;
     trigger_data_t      triggerData;
     
@@ -66,8 +65,7 @@ int main(uint16_t argc, char* argv[]){
     int16_t             fixedThresholds		[NUMBER_OF_AXES];
     int16_t             xyzNormalizedValues	[NUMBER_OF_AXES];
 
-    kx132_config.hardwareConfig                 = &hardwareConfig;
-    kx132_config.softwareConfig                 = &softwareConfig;
+    kx132_config.mainConfig                     = &mainConfig;
     kx132_config.triggerConfig                  = &triggerConfig;
     kx132_config.triggerData                    = &triggerData;
 
@@ -101,7 +99,7 @@ int main(uint16_t argc, char* argv[]){
         return -1;
     }
 
-    normalizeThresholds(softwareConfig.readMode, &triggerData);
+    normalizeThresholds(mainConfig.readMode_hw, &triggerData);
     setOffsetThresholds(&triggerData);
 
     #ifdef TCP_SERVER

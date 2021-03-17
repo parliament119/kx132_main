@@ -35,7 +35,7 @@ static bool MAIN_LOOP = true;
  * 
  * @param readMode 			for reading with sync0 / async
  */
-void kx132_streaming_mode(readMode_sw_t readMode);
+void kx132_streaming_mode(readMode_hw_t readMode);
 
 
 /**
@@ -48,14 +48,13 @@ void kx132_streaming_mode(readMode_sw_t readMode);
  * @param triggerConfig 	pointer to struct containing settings of trigger mode
  * @param triggerData 		pointer to struct containing thresholds and normalized data
  */
-void kx132_trigger_mode(sw_config_t *softwareConfig, trigger_config_t *triggerConfig, trigger_data_t *triggerData);
+void kx132_trigger_mode(main_config_t *mainConfig, trigger_config_t *triggerConfig, trigger_data_t *triggerData);
 
 
 
 bool kx132_init(kx132_config_t* kx132_config){
 
-    hw_config_t*	hardwareConfig              = (hw_config_t*) kx132_config->hardwareConfig;
-    sw_config_t*	softwareConfig              = (sw_config_t*) kx132_config->softwareConfig;
+    main_config_t*	mainConfig                  = (main_config_t*) kx132_config->mainConfig;
 
     uint8_t 		whoAmI_Register_Default     = 0x3D;
     uint8_t 		whoAmI_Register_Value       = 0;
@@ -83,12 +82,12 @@ bool kx132_init(kx132_config_t* kx132_config){
     }
 
 
-    switch (softwareConfig->readMode)
+    switch (mainConfig->readMode_hw)
     {
         case synchronous_read_0:
             spi_write(CNTL1_REG_ADDR, 	0x00);
-            spi_write(ODCNTL_REG_ADDR, 	hardwareConfig->outputDataRate_hw);
-            spi_write(CNTL1_REG_ADDR, 	0xE0 | hardwareConfig->gRange_hw);
+            spi_write(ODCNTL_REG_ADDR, 	mainConfig->outputDataRate_hw);
+            spi_write(CNTL1_REG_ADDR, 	0xE0 | mainConfig->gRange_hw);
 
             break;
 
@@ -96,15 +95,15 @@ bool kx132_init(kx132_config_t* kx132_config){
         // 	spi_write(CNTL1_REG_ADDR,	0x00);
         // 	spi_write(INC1_REG_ADDR,	0x30);
         // 	spi_write(INC4_REG_ADDR,	0x10);
-        // 	spi_write(ODCNTL_REG_ADDR,	kx132_config->hardwareConfig->outputDataRate);
-        // 	spi_write(CNTL1_REG_ADDR,	0xE0 | hardwareConfig->gRange_hw);
+        // 	spi_write(ODCNTL_REG_ADDR,	mainConfig->outputDataRate_hw);
+        // 	spi_write(CNTL1_REG_ADDR,	0xE0 | mainConfig->gRange_hw);
         // 
         // 	break;
 
         case asynchronous_read:
             spi_write(CNTL1_REG_ADDR, 	0x00);
-            spi_write(ODCNTL_REG_ADDR, 	hardwareConfig->outputDataRate_hw);
-            spi_write(CNTL1_REG_ADDR, 	0xC0 | hardwareConfig->gRange_hw);
+            spi_write(ODCNTL_REG_ADDR, 	mainConfig->outputDataRate_hw);
+            spi_write(CNTL1_REG_ADDR, 	0xC0 | mainConfig->gRange_hw);
 
             break;
         
@@ -172,23 +171,23 @@ void *kx132_main_loop(void *kx_config){
 
     kx132_config_t      *kx132_config 	= (kx132_config_t*) kx_config;
 
-    sw_config_t         *softwareConfig = kx132_config->softwareConfig;
+    main_config_t       *mainConfig     = kx132_config->mainConfig;
     trigger_config_t    *triggerConfig 	= kx132_config->triggerConfig;
     trigger_data_t      *triggerData 	= kx132_config->triggerData;
 
-    if(softwareConfig->useMode == streaming_mode){
-        kx132_streaming_mode(softwareConfig->readMode);
+    if(mainConfig->useMode == streaming_mode){
+        kx132_streaming_mode(mainConfig->readMode_hw);
 
     }
-    else if(softwareConfig->useMode == triggered_mode){
-        kx132_trigger_mode(softwareConfig, triggerConfig, triggerData);
+    else if(mainConfig->useMode == triggered_mode){
+        kx132_trigger_mode(mainConfig, triggerConfig, triggerData);
     }
 
     return NULL;
 }
 
 
-void kx132_streaming_mode(readMode_sw_t readMode){
+void kx132_streaming_mode(readMode_hw_t readMode){
 
 
     //-------------------------------------------------------------------
@@ -248,7 +247,7 @@ void kx132_streaming_mode(readMode_sw_t readMode){
 }
 
 
-void kx132_trigger_mode(sw_config_t *softwareConfig, trigger_config_t* triggerConfig, trigger_data_t *triggerData){
+void kx132_trigger_mode(main_config_t *mainConfig, trigger_config_t* triggerConfig, trigger_data_t *triggerData){
 
     //-------------------------------------------------------------------
     //--- Variable Declarations & Memmory Allocation --------------------
@@ -266,8 +265,8 @@ void kx132_trigger_mode(sw_config_t *softwareConfig, trigger_config_t* triggerCo
 
     for(axis_t axis = 0; axis < NUMBER_OF_AXES ; axis++){
 
-        xyzBuffer[axis]     = (int16_t*) malloc(softwareConfig->bufferSize * sizeof(int16_t));
-        xyzReadBuffer[axis] = (int16_t*) malloc(softwareConfig->bufferSize * sizeof(int16_t));
+        xyzBuffer[axis]     = (int16_t*) malloc(mainConfig->bufferSize * sizeof(int16_t));
+        xyzReadBuffer[axis] = (int16_t*) malloc(mainConfig->bufferSize * sizeof(int16_t));
 
         if(xyzBuffer[axis] == NULL){
             printf("[drv_kx132][error] Buffer could not be allocated!\n", axis+1);
@@ -281,7 +280,7 @@ void kx132_trigger_mode(sw_config_t *softwareConfig, trigger_config_t* triggerCo
     }
 
     
-    if(!rb_xyz_init(xyzRingbuffer, xyzBuffer, softwareConfig->bufferSize)){
+    if(!rb_xyz_init(xyzRingbuffer, xyzBuffer, mainConfig->bufferSize)){
         printf("[drv_kx132][error] Ringbuffer could not be initialized.\n");
         return;
     }
@@ -292,12 +291,12 @@ void kx132_trigger_mode(sw_config_t *softwareConfig, trigger_config_t* triggerCo
 
     while(MAIN_LOOP)
     {
-        if(softwareConfig->readMode == synchronous_read_0){
+        if(mainConfig->readMode_hw == synchronous_read_0){
             if(!kx_132_sync0_read_raw_data(xyzRawData)){
                 continue; // repeatedly try to read until new axis data is available 
             }
         }
-        else if(softwareConfig->readMode == asynchronous_read){
+        else if(mainConfig->readMode_hw == asynchronous_read){
             kx132_async_read_raw_data(xyzRawData);
         }
         
@@ -319,12 +318,12 @@ void kx132_trigger_mode(sw_config_t *softwareConfig, trigger_config_t* triggerCo
             
 
             while(samplesRead <= triggerConfig->triggerInfo->samplesAfterTrig){
-                if(softwareConfig->readMode == synchronous_read_0){
+                if(mainConfig->readMode_hw == synchronous_read_0){
                     if(!kx_132_sync0_read_raw_data(xyzRawData)){
                         continue; // repeatedly try to read until new axis data is available 
                     }
                 }
-                else if(softwareConfig->readMode == asynchronous_read){
+                else if(mainConfig->readMode_hw == asynchronous_read){
                     kx132_async_read_raw_data(xyzRawData);
                 }
 

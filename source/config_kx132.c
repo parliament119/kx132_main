@@ -149,7 +149,7 @@ void kx132_config_init(uint16_t argc, char *argv[], kx132_config_t *kx132_config
     triggerConfig->triggerInfo->timeBeforeTrig                      = DEFAULT_TIME;
     triggerConfig->triggerInfo->timeAfterTrig                       = DEFAULT_TIME;
     triggerConfig->triggerInfo->triggerIndex                        = ZERO;
-    triggerConfig->triggerInfo->outputDataRate                      = outputDataRate_double[mainConfig->outputDataRate_hw];
+    triggerConfig->triggerInfo->outputDataRate                      = outputDataRate_double_list[mainConfig->outputDataRate_hw];
 
     triggerData->normalizedData[X_AXIS]                             = DEFAULT_NORMALIZED;
     triggerData->normalizedData[Y_AXIS]                             = DEFAULT_NORMALIZED;
