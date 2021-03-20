@@ -7,10 +7,10 @@
  * 
  */
 
-///cond
+///\cond
 #include <stdint.h>
 #include <stdio.h>
-///endcond
+///\endcond
 
 #include <utility.h>
 #include <macros_kx132.h>

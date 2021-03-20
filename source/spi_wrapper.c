@@ -7,7 +7,7 @@
  * 
  */
 
-///cond
+///\cond
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -15,7 +15,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <bcm2835.h>
-///endcond
+///\endcond
 
 #include <regs_kx132.h>
 #include <spi_wrapper.h>

@@ -13,10 +13,10 @@
 #ifndef TRIGGER_H
 #define TRIGGER_H
 
-///cond
+///\cond
 #include <stdint.h>
 #include <stdbool.h>
-///endcond
+///\endcond
 
 #include <macros_kx132.h>
 

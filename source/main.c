@@ -9,7 +9,7 @@
  * 
  */
 
-///cond
+///\cond
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -17,7 +17,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <sys/resource.h>
-///endcond
+///\endcond
 
 #include <regs_kx132.h>
 #include <macros_kx132.h>

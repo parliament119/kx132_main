@@ -9,14 +9,14 @@
  * 
  */
 
-///cond
+///\cond
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-///endcond
+///\endcond
 
 #include <regs_kx132.h>
 #include <spi_wrapper.h>

@@ -18,9 +18,9 @@
 #ifndef CONFIG_KX132_H
 #define CONFIG_KX132_H
 
-///cond
+///\cond
 #include <stdint.h>
-///endcond
+///\endcond
 
 #include <trigger.h>
 

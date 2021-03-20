@@ -12,10 +12,10 @@
 #ifndef DRV_KX132_H
 #define DRV_KX132_H
 
-///cond
+///\cond
 #include <stdint.h>
 #include <stdbool.h>
-///endcond
+///\endcond
 
 #include <config_kx132.h>
 
