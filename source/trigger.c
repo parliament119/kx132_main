@@ -7,9 +7,11 @@
  * 
  */
 
+///cond
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+///endcond
 
 #include <trigger.h>
 #include <config_kx132.h>

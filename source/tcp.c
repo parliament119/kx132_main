@@ -7,6 +7,7 @@
  * 
  */
 
+///cond
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -18,6 +19,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+///endcond
 
 #include <ringbuffer.h>
 #include <macros_kx132.h>

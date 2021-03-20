@@ -9,9 +9,11 @@
  * 
  */
 
+///cond
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+///endcond
 
 #include <ringbuffer.h>
 #include <macros_kx132.h>

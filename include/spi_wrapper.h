@@ -12,8 +12,11 @@
 #ifndef SPI_WRAPPER_H
 #define SPI_WRAPPER_H
 
+///cond
 #include <stdint.h>
 #include <stdbool.h>
+///endcond
+
 #include <regs_kx132.h>
 
 

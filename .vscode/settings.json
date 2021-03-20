@@ -1,7 +1,9 @@
 {
     "files.associations": {
         "ringbuffer.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "string.h": "c",
+        "stdlib.h": "c"
     },
     "editor.detectIndentation": false
 }

@@ -12,8 +12,10 @@
 #ifndef RINGBUFFER_H_
 #define RINGBUFFER_H_
 
+///cond
 #include <stdint.h>
 #include <stdbool.h>
+///endcond
 
 #include <trigger.h>
 
