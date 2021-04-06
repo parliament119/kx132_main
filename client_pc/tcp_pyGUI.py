@@ -474,18 +474,20 @@ class mainWindow:
         ##-----------------------------------------------------------
         self.InitFrame   = tk.Frame(root, width=1050, height=120, highlightthickness= 1, highlightbackground="black")
         self.TrigFrame   = tk.Frame(root, width=1050, height=200, highlightthickness= 1, highlightbackground="black")
+        self.PathFrame   = tk.Frame(root, width=1050, height=80,  highlightthickness= 1, highlightbackground="black")
         self.ButtonFrame = tk.Frame(root, width=1050, height=120, highlightthickness= 1, highlightbackground="black")
-        self.PathFrame   = tk.Frame(root, width=1050, height=80, highlightthickness= 1, highlightbackground="black")
 
         self.InitFrame.grid_propagate   (FALSE)
         self.TrigFrame.grid_propagate   (FALSE)
-        self.ButtonFrame.grid_propagate (FALSE)
         self.PathFrame.grid_propagate   (FALSE)
+        self.ButtonFrame.grid_propagate (FALSE)
 
         self.InitFrame.place    (x=25,y=20)
         self.TrigFrame.place    (x=25,y=160)
-        self.ButtonFrame.place  (x=25,y=380)
-        self.PathFrame.place    (x=25,y=520)
+        self.PathFrame.place    (x=25,y=380)
+        self.ButtonFrame.place  (x=25,y=480)
+        # self.ButtonFrame.place  (x=25,y=380)
+        # self.PathFrame.place    (x=25,y=520)
 
 
         ##-----------------------------------------------------------

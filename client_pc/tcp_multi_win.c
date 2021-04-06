@@ -1,5 +1,7 @@
-// compile with: " gcc -fPIC -shared -o $NAME_OF_FILE$.so $NAME_OF_FILE$.c "
+// compile with: " gcc -fPIC -shared -o $NAME_OF_FILE$.so $NAME_OF_FILE$.c"
 // Build with lib "-lws2_32"
+
+// gcc -fPIC -shared -o tcp_multi_win.so tcp_multi_win.c -lws2_32
 
 #include <winsock2.h>
 #include <stdio.h>
