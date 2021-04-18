@@ -694,10 +694,10 @@ class mainWindow:
         ##-----------------------------------------------------------
         # self.ButtonHeader               = tk.Message(self.ButtonFrame,  text=' Buttons \n------------------------', width=300)
 
-        self.startButton                = tk.Button(self.ButtonFrame,   text='Start',                     command=self.startButton,               width=14)
-        self.stopButton                 = tk.Button(self.ButtonFrame,   text='Stop',                      command=self.stopButton,                width=14)
-        self.resendButton               = tk.Button(self.ButtonFrame,   text='Trigger\naktualisieren',    command=self.resendTriggerConfigButton, width=14)
-        self.quitButton                 = tk.Button(self.ButtonFrame,   text='Beenden',                   command=self.quitButton,                width=14)
+        self.startButton                = tk.Button(self.ButtonFrame,   text='Start',                               command=self.startButton,               width=14, height=2)
+        self.stopButton                 = tk.Button(self.ButtonFrame,   text='Stop',                                command=self.stopButton,                width=14, height=2)
+        self.resendButton               = tk.Button(self.ButtonFrame,   text='Trigger-Optionen\naktualisieren',     command=self.resendTriggerConfigButton, width=14, height=2)
+        self.quitButton                 = tk.Button(self.ButtonFrame,   text='Beenden',                             command=self.quitButton,                width=14, height=2)
         self.statusLabel                = tk.Label(self.ButtonFrame,    text='\nStatus')
         self.statusVarLabel             = tk.Label(self.ButtonFrame,    text='STOP', font='bold', fg='red')
 
