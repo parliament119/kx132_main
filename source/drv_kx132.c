@@ -179,7 +179,6 @@ void *kx132_main_loop(void *kx_config){
 
     if(mainConfig->useMode == streaming_mode){
         kx132_streaming_mode(mainConfig->readMode_hw);
-
     }
     else if(mainConfig->useMode == triggered_mode){
         kx132_trigger_mode(mainConfig, triggerConfig, triggerData);
@@ -252,7 +251,7 @@ void kx132_streaming_mode(readMode_hw_t readMode){
 void kx132_trigger_mode(main_config_t *mainConfig, trigger_config_t* triggerConfig, trigger_data_t *triggerData){
 
     //-------------------------------------------------------------------
-    //--- Variable Declarations & Memmory Allocation --------------------
+    //--- Variable Declarations & Memory Allocation --------------------
     //-------------------------------------------------------------------
 
     uint8_t         xyzRawData      [NUMBER_OF_CHANNELS];

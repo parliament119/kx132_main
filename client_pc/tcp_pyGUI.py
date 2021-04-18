@@ -136,6 +136,7 @@ piSSH           = paramiko.SSHClient()
 
 tcp = ""
 
+# RaspberryPi_IP  = "100.200.150.42"
 
 
 ##-------------------------------------------------------------------
@@ -143,41 +144,39 @@ tcp = ""
 ##-------------------------------------------------------------------
 
 
-def kx132(initConfig, triggerConfig, outputPathStr, outputNameStr):
+def kx132(initConfig, triggerConfig, outputPathStr, outputNameStr, raspberryPi_IP):
     global tcp
     global runThreads
 
     runThreads = True
 
-    ssh_init_kx132(initConfig, triggerConfig)
+    if (ssh_init_kx132(initConfig, triggerConfig, raspberryPi_IP)):
 
-    # tcp_c_lib_path = "C:\\Users\\User\\Documents\\HTW\\Bachelorarbeit\\Source\\test\\tcp_test\\tcp_multi_win.so"
-    tcp_c_lib_path = ".\\tcp_multi_win.so"
-    tcp = ctypes.CDLL(tcp_c_lib_path)
+        tcp_c_lib_path = ".\\tcp_multi_win.so"
+        tcp = ctypes.CDLL(tcp_c_lib_path)
 
+        # Need to specify return type of c-funtion to pointer
+        tcp.tcp_single_read.restype         = ndpointer(dtype=ctypes.c_int16, shape=(3,))
+        tcp.tcp_read_uint32.restype         = ndpointer(dtype=ctypes.c_uint32, shape=(1,))
 
-    # Need to specify return type of c-funtion to pointer
-    tcp.tcp_single_read.restype         = ndpointer(dtype=ctypes.c_int16, shape=(3,))
-    tcp.tcp_read_uint32.restype         = ndpointer(dtype=ctypes.c_uint32, shape=(1,))
+        tcp.tcp_init(bytes(raspberryPi_IP, 'utf-8'))
 
-    tcp.tcp_init()
+        readThread = threading.Thread(target=tcp_read_data, args=(initConfig[MODE_INDEX], outputPathStr, outputNameStr))
+        # sendThread = threading.Thread(target=tcp_send)
 
-    readThread = threading.Thread(target=tcp_read_data, args=(initConfig[MODE_INDEX], outputPathStr, outputNameStr))
-    # sendThread = threading.Thread(target=tcp_send)
+        # this should enable to kill the threads, if keyboard interrupt kills main
+        readThread.daemon = True
+        # sendThread.daemon = True
 
-    # this should enable to kill the threads, if keyboard interrupt kills main
-    readThread.daemon = True
-    # sendThread.daemon = True
+        readThread.start()
+        # sendThread.start()
 
-    readThread.start()
-    # sendThread.start()
+        readThread.join()
+        # sendThread.join()
 
-    readThread.join()
-    # sendThread.join()
+        tcp.tcp_close()
 
-    tcp.tcp_close()
-
-    print("All TCP threads terminated. Program finished.\n")
+        print("All TCP threads terminated. Program finished.\n")
 
 
 def getOffsetThresholdFlags(thresholdList):
@@ -239,7 +238,7 @@ def getTriggerFlags(triggerConfig):
 
     return triggerString
 
-def ssh_init_kx132(initConfig, triggerConfig):
+def ssh_init_kx132(initConfig, triggerConfig, raspberryPi_IP):
     
     initString      = getInitFlags(initConfig)
     triggerString   = getTriggerFlags(triggerConfig)
@@ -252,21 +251,24 @@ def ssh_init_kx132(initConfig, triggerConfig):
 
     piSSH.load_system_host_keys()
     piSSH.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    piSSH.connect('100.200.150.42', username='pi', password='pipo')
+    try:
+        piSSH.connect(raspberryPi_IP, username='pi', password='pipo', timeout=10)
+        stdin, stdout, stderr = piSSH.exec_command(cmd) #TODO (stderr)? clear that here
+        stdin.channel.shutdown_write()                  #!!! TODO
+        return True
+    except:
+        print(f"SSH-Connection to {raspberryPi_IP} could not be established. Wrong IP?")
+        return False
 
-    stdin, stdout, stderr = piSSH.exec_command(cmd) #TODO (stderr)? clear that here
-
-    # stdin.write('<?php echo "Hello!"; sleep(2); ?>')
-    # stdin.write('Hallo') 
-
-    stdin.channel.shutdown_write()
-
-    # print(f'STDOUT: {stdout.read().decode("utf8")}')
-    # print(f'STDERR: {stderr.read().decode("utf8")}')
 
     
 def ssh_close_kx132():
     global piSSH
+    try:
+        killCmd = "sudo killall kx132"
+        piSSH.exec_command(killCmd)
+    except:
+        pass
     piSSH.close()
 
 def tcp_quit():
@@ -466,7 +468,7 @@ class mainWindow:
     def __init__(self, root):
         global triggerCount
 
-        root.geometry('1100x620')
+        root.geometry('1100x600')
         root.title('KX132 Accelerometer GUI')
 
         ##-----------------------------------------------------------
@@ -475,7 +477,7 @@ class mainWindow:
         self.InitFrame   = tk.Frame(root, width=1050, height=120, highlightthickness= 1, highlightbackground="black")
         self.TrigFrame   = tk.Frame(root, width=1050, height=200, highlightthickness= 1, highlightbackground="black")
         self.PathFrame   = tk.Frame(root, width=1050, height=80,  highlightthickness= 1, highlightbackground="black")
-        self.ButtonFrame = tk.Frame(root, width=1050, height=120, highlightthickness= 1, highlightbackground="black")
+        self.ButtonFrame = tk.Frame(root, width=1050, height=100, highlightthickness= 1, highlightbackground="black")
 
         self.InitFrame.grid_propagate   (FALSE)
         self.TrigFrame.grid_propagate   (FALSE)
@@ -556,16 +558,18 @@ class mainWindow:
         
         self.outputPathVar              = tk.StringVar()
         self.outputNameVar              = tk.StringVar()
+        self.raspberryPi_IP             = tk.StringVar()
 
         self.outputPathVar.set          (".\output\\")
-        self.outputNameVar.set          ("kx132_output")          
+        self.outputNameVar.set          ("kx132_output")      
+        self.raspberryPi_IP.set         ("100.200.150.42")      
         
 
 
         ##-----------------------------------------------------------
         ##  INIT FRAME
         ##-----------------------------------------------------------
-        self.InitHeader                 = tk.Message(self.InitFrame, text=' Initial Config \n------------------------', width=300)
+        self.InitHeader                 = tk.Message(self.InitFrame, text=' Allgemeine Optionen \n------------------------', width=300)
 
         self.ModeLabel                  = tk.Label(self.InitFrame, text='Modus',                    padx=10)
         self.OdrLabel                   = tk.Label(self.InitFrame, text='Frequenz',                 padx=10)
@@ -597,7 +601,7 @@ class mainWindow:
         ##-----------------------------------------------------------
         ##  TRIGGER FRAME
         ##-----------------------------------------------------------
-        self.TrigHeader                 = tk.Message(self.TrigFrame, text=' Trigger Config \n------------------------', width=300)
+        self.TrigHeader                 = tk.Message(self.TrigFrame, text=' Trigger Optionen \n------------------------', width=300)
 
         self.TrigModeLabel              = tk.Label(self.TrigFrame, text='Trigger-Modus',                padx=10)
         self.EdgeLabel                  = tk.Label(self.TrigFrame, text='Flankenerkennung',             padx=10)
@@ -665,27 +669,6 @@ class mainWindow:
 
 
         ##-----------------------------------------------------------
-        ##  BUTTON FRAME
-        ##-----------------------------------------------------------
-        self.ButtonHeader               = tk.Message(self.ButtonFrame,  text=' Buttons \n------------------------', width=300)
-
-        self.startButton                = tk.Button(self.ButtonFrame,   text='Start',                     command=self.startButton,               width=14)
-        self.stopButton                 = tk.Button(self.ButtonFrame,   text='Stop',                      command=self.stopButton,                width=14)
-        self.resendButton               = tk.Button(self.ButtonFrame,   text='Trigger\naktualisieren',    command=self.resendTriggerConfigButton, width=14)
-        self.quitButton                 = tk.Button(self.ButtonFrame,   text='Beenden',                   command=self.quitButton,                width=14)
-        self.statusLabel                = tk.Label(self.ButtonFrame,    text='Status')
-        self.statusVarLabel             = tk.Label(self.ButtonFrame,    text='STOP', font='bold', fg='red')
-
-        self.ButtonHeader.grid          (row=0, column=0)
-        self.statusLabel.grid           (row=0, column=4, padx=100)
-
-        self.startButton.grid           (row=1, column=0, padx=20)  
-        self.stopButton.grid            (row=1, column=1, padx=20)  
-        self.resendButton.grid          (row=1, column=2, padx=20)   
-        self.quitButton.grid            (row=1, column=3, padx=20)
-        self.statusVarLabel.grid        (row=1, column=4)
-
-        ##-----------------------------------------------------------
         ##  PATH FRAME
         ##-----------------------------------------------------------
 
@@ -695,7 +678,7 @@ class mainWindow:
         self.outputPathEntry            = tk.Entry(self.PathFrame,      textvariable=self.outputPathVar, width = 70)
         self.outputNameEntry            = tk.Entry(self.PathFrame,      textvariable=self.outputNameVar, width = 50)
 
-        self.outputPathButton           = tk.Button(self.PathFrame,   text='Suchen',    command=self.pathButton,    width=14)
+        self.outputPathButton           = tk.Button(self.PathFrame,     text='Suchen',    command=self.pathButton,    width=14)
 
 
         self.outputPathLabel.grid           (row=0, column=0, padx=60, pady=7)  
@@ -705,6 +688,32 @@ class mainWindow:
         self.outputPathButton.grid          (row=1, column=1)
         self.outputNameEntry.grid           (row=1, column=2, padx=140, pady=5)  
 
+
+        ##-----------------------------------------------------------
+        ##  BUTTON FRAME
+        ##-----------------------------------------------------------
+        # self.ButtonHeader               = tk.Message(self.ButtonFrame,  text=' Buttons \n------------------------', width=300)
+
+        self.startButton                = tk.Button(self.ButtonFrame,   text='Start',                     command=self.startButton,               width=14)
+        self.stopButton                 = tk.Button(self.ButtonFrame,   text='Stop',                      command=self.stopButton,                width=14)
+        self.resendButton               = tk.Button(self.ButtonFrame,   text='Trigger\naktualisieren',    command=self.resendTriggerConfigButton, width=14)
+        self.quitButton                 = tk.Button(self.ButtonFrame,   text='Beenden',                   command=self.quitButton,                width=14)
+        self.statusLabel                = tk.Label(self.ButtonFrame,    text='\nStatus')
+        self.statusVarLabel             = tk.Label(self.ButtonFrame,    text='STOP', font='bold', fg='red')
+
+        self.rpiIPLabel                 = tk.Label(self.ButtonFrame,    text='\nRaspberryPi')
+        self.rpiIPEntry                 = tk.Entry(self.ButtonFrame,    textvariable=self.raspberryPi_IP, width = 15, justify=CENTER)
+
+        # self.ButtonHeader.grid          (row=0, column=0)
+        self.rpiIPLabel.grid            (row=0, column=4)
+        self.statusLabel.grid           (row=0, column=5)
+
+        self.startButton.grid           (row=1, column=0, padx=20)  
+        self.stopButton.grid            (row=1, column=1, padx=20)  
+        self.resendButton.grid          (row=1, column=2, padx=20)   
+        self.quitButton.grid            (row=1, column=3, padx=20)
+        self.rpiIPEntry.grid            (row=1, column=4, padx=75, pady=10)
+        self.statusVarLabel.grid        (row=1, column=5, padx=40)
 
 
     def toggleTriggerSignal(self):
@@ -748,12 +757,12 @@ class mainWindow:
 
         runThreads = False
 
-        ssh_close_kx132()
-
         try:
             tcp_quit()
         except:
             print("TCP-Socket couldn't be closed. Probably not started in the first place.")
+
+        ssh_close_kx132()
 
         self.statusVarLabel.config(text='STOP', font='bold', fg='red')
 
@@ -800,7 +809,9 @@ class mainWindow:
         outputPathStr = self.outputPathVar.get()
         outputNameStr = self.outputNameVar.get()
 
-        mainLoopThread = threading.Thread(target=kx132, args=(self.initConfigList,self.trigConfigList, outputPathStr, outputNameStr))
+        raspi_IP      = self.raspberryPi_IP.get()
+
+        mainLoopThread = threading.Thread(target=kx132, args=(self.initConfigList, self.trigConfigList, outputPathStr, outputNameStr, raspi_IP))
 
         mainLoopThread.daemon = True
         mainLoopThread.start()
