@@ -75,7 +75,6 @@ typedef struct{
     uint32_t            samplesAfterTrig;           ///< samples to read from ringbuffer after trigger; calculated based on frequency and timeAfterTrig
     uint32_t            numberOfSamples;            ///< sum of number of samples to be read from ringbuffer and send over tcp
     uint32_t            triggerIndex;               ///< holds info about index of samples which triggered
-    double              outputDataRate;             ///< outputDataRate for calculating needed samples for reading from ringbuffer
 } trigger_info_t;
 
 

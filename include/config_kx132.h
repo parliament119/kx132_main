@@ -154,10 +154,11 @@ void processInitFlags(  uint16_t            argc,
  * @param data              pointer to string containing user input
  * @param triggerConfig     pointer to struct containing trigger setting for changing
  * @param triggerData       pointer to struct containing trigger data for changing
+ * @param outputDataRate    info about hardware frequency of sensor for calculating needed samples
  * @return true             if an "exit"-message was sent, will terminate program
  * @return false            if no "exit"-message was sent
  */
-bool processRuntimeFlags(char *data, trigger_config_t *triggerConfig, trigger_data_t *triggerData);
+bool processRuntimeFlags(char *data, trigger_config_t *triggerConfig, trigger_data_t *triggerData, outputDataRate_hw_t outputDataRate);
 
 
 /**

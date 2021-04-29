@@ -100,8 +100,9 @@ static const trigger_bitmask_t triggerBitmaskList[7] = {
  *  Also refreshes the number of samples to be read from ringbuffer.
  * 
  * @param triggerInfo       pointer to struct containing the time related trigger settings
+ * @param outputDataRate    info about hardware frequency of sensor for calculating needed samples
  */
-static void setTriggerTimeSamplesBefore(trigger_info_t *triggerInfo);
+static void setTriggerTimeSamplesBefore(trigger_info_t *triggerInfo, outputDataRate_hw_t outputDataRate);
 
 
 /**
@@ -111,8 +112,9 @@ static void setTriggerTimeSamplesBefore(trigger_info_t *triggerInfo);
  *  Also refreshes the number of samples to be read from ringbuffer.
  * 
  * @param triggerInfo       pointer to struct containing the time related trigger settings
+ * @param outputDataRate    info about hardware frequency of sensor for calculating needed samples
  */
-static void setTriggerTimeSamplesAfter(trigger_info_t *triggerInfo);
+static void setTriggerTimeSamplesAfter(trigger_info_t *triggerInfo, outputDataRate_hw_t outputDataRate);
 
 
 /**
@@ -121,8 +123,9 @@ static void setTriggerTimeSamplesAfter(trigger_info_t *triggerInfo);
  * @note Calls setTriggerTimeSamplesBefore() and setTriggerTimeSamplesAfter()
  * 
  * @param triggerInfo       pointer to struct containing the time related trigger settings
+ * @param outputDataRate    info about hardware frequency of sensor for calculating needed samples
  */
-static void setTriggerTimeSamples(trigger_info_t *triggerInfo);
+static void setTriggerTimeSamples(trigger_info_t *triggerInfo, outputDataRate_hw_t outputDataRate);
 
 
 //-------------------------------------------------------------------
@@ -151,7 +154,6 @@ void kx132_config_init(uint16_t argc, char *argv[], kx132_config_t *kx132_config
     triggerConfig->triggerInfo->timeBeforeTrig                      = DEFAULT_TIME;
     triggerConfig->triggerInfo->timeAfterTrig                       = DEFAULT_TIME;
     triggerConfig->triggerInfo->triggerIndex                        = ZERO;
-    triggerConfig->triggerInfo->outputDataRate                      = outputDataRate_double_list[mainConfig->outputDataRate_hw];
 
     triggerData->normalizedData[X_AXIS]                             = DEFAULT_NORMALIZED;
     triggerData->normalizedData[Y_AXIS]                             = DEFAULT_NORMALIZED;
@@ -171,7 +173,7 @@ void kx132_config_init(uint16_t argc, char *argv[], kx132_config_t *kx132_config
         processInitFlags(argc, argv, mainConfig, triggerConfig, triggerData);
     }
 
-    setTriggerTimeSamples(triggerConfig->triggerInfo);
+    setTriggerTimeSamples(triggerConfig->triggerInfo, mainConfig->outputDataRate_hw,);
 
 }
 
@@ -246,8 +248,8 @@ void processInitFlags(  uint16_t            argc,
         //---------------------
         if(!strncmp(argv[i], odr_Flag, strlen(odr_Flag))){
             if(sscanf(argv[i+1], "%d", &intArgValue) == 1){
-                mainConfig->outputDataRate_hw       = outputDataRateList[intArgValue];
-                triggerConfig->triggerInfo->outputDataRate = outputDataRate_double_list[intArgValue];
+                mainConfig->outputDataRate_hw   = outputDataRateList[intArgValue];
+                setTriggerTimeSamples(triggerConfig->triggerInfo, mainConfig->outputDataRate_hw);
                 i++;
             }
         }
@@ -453,7 +455,7 @@ void processInitFlags(  uint16_t            argc,
 }
 
 
-bool processRuntimeFlags(char *data, trigger_config_t* triggerConfig, trigger_data_t* triggerData){
+bool processRuntimeFlags(char *data, trigger_config_t* triggerConfig, trigger_data_t* triggerData, outputDataRate_hw_t outputDataRate){
 
     const char* exit_Flag       = "exit";
     uint32_t    intArgValue     = 0;
@@ -505,7 +507,7 @@ bool processRuntimeFlags(char *data, trigger_config_t* triggerConfig, trigger_da
             strPtr = strtok (NULL, " ");
             if(sscanf(strPtr, "%d", &intArgValue) == 1){
                 triggerConfig->triggerInfo->timeBeforeTrig = intArgValue;
-                setTriggerTimeSamplesBefore(triggerConfig->triggerInfo);
+                setTriggerTimeSamplesBefore(outputDataRate, triggerConfig->triggerInfo);
             }
         }
 
@@ -513,7 +515,7 @@ bool processRuntimeFlags(char *data, trigger_config_t* triggerConfig, trigger_da
             strPtr = strtok (NULL, " ");
             if(sscanf(strPtr, "%d", &intArgValue) == 1){
                 triggerConfig->triggerInfo->timeAfterTrig = intArgValue;
-                setTriggerTimeSamplesAfter(triggerConfig->triggerInfo);
+                setTriggerTimeSamplesAfter(outputDataRate, triggerConfig->triggerInfo);
             }
         }
 
@@ -609,21 +611,21 @@ bool processRuntimeFlags(char *data, trigger_config_t* triggerConfig, trigger_da
 }
 
 
-void setTriggerTimeSamplesBefore(trigger_info_t *triggerInfo){
-    triggerInfo->samplesBeforeTrig   = (uint32_t) ( ceil( triggerInfo->outputDataRate * triggerInfo->timeBeforeTrig / 1000) );
+void setTriggerTimeSamplesBefore(trigger_info_t *triggerInfo, outputDataRate_hw_t outputDataRate){
+    triggerInfo->samplesBeforeTrig   = (uint32_t) ( ceil( outputDataRate_double_list[outputDataRate] * triggerInfo->timeBeforeTrig / 1000) );
     triggerInfo->numberOfSamples     = triggerInfo->samplesBeforeTrig + TRIGGER_INDEX_VALUE + triggerInfo->samplesAfterTrig;
 }
 
 
-void setTriggerTimeSamplesAfter(trigger_info_t *triggerInfo){
-    triggerInfo->samplesAfterTrig   = (uint32_t) ( ceil( triggerInfo->outputDataRate * triggerInfo->timeAfterTrig / 1000) );
+void setTriggerTimeSamplesAfter(trigger_info_t *triggerInfo, outputDataRate_hw_t outputDataRate){
+    triggerInfo->samplesAfterTrig   = (uint32_t) ( ceil( outputDataRate_double_list[outputDataRate] * triggerInfo->timeAfterTrig / 1000) );
     triggerInfo->numberOfSamples     = triggerInfo->samplesBeforeTrig + TRIGGER_INDEX_VALUE + triggerInfo->samplesAfterTrig;
 }
 
 
-void setTriggerTimeSamples(trigger_info_t *triggerInfo){
-    setTriggerTimeSamplesBefore(triggerInfo);
-    setTriggerTimeSamplesAfter(triggerInfo);
+void setTriggerTimeSamples(trigger_info_t *triggerInfo, outputDataRate_hw_t outputDataRate){
+    setTriggerTimeSamplesBefore(triggerInfo, outputDataRate);
+    setTriggerTimeSamplesAfter(triggerInfo, outputDataRate);
 }
 
 

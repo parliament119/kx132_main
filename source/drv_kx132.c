@@ -147,6 +147,7 @@ void *kx132_runtime_config(void *kx_config){
     kx132_config_t      *kx132_config 	= (kx132_config_t*) kx_config;
     trigger_config_t    *triggerConfig 	= kx132_config->triggerConfig;
     trigger_data_t      *triggerData 	= kx132_config->triggerData;
+    outputDataRate_hw_t  outputDataRate = kx132_config->mainConfig->outputDataRate_hw;
 
     #ifdef TCP_SERVER
         printf("[drv_kx132] Runtime Config listening.\n");
@@ -155,7 +156,7 @@ void *kx132_runtime_config(void *kx_config){
         while(MAIN_LOOP){
             tcp_recv(data);
 
-            if(processRuntimeFlags(data, triggerConfig, triggerData)){
+            if(processRuntimeFlags(data, triggerConfig, triggerData, outputDataRate)){
                 printf("[drv_kx132] Client terminated connection. Exiting Program.\n");
                 MAIN_LOOP = false;
                 break;
