@@ -41,3 +41,4 @@ Thumbs.db
 ###############
 /build/*
 /client_pc/output/*
+/gui_kx132_pc/output/*

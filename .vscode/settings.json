@@ -5,5 +5,13 @@
         "string.h": "c",
         "stdlib.h": "c"
     },
-    "editor.detectIndentation": false
+    "editor.detectIndentation": false,
+    "cSpell.ignoreWords": [
+        "cdll",
+        "ctypes",
+        "dtype",
+        "ndpointer",
+        "reso",
+        "thres"
+    ]
 }

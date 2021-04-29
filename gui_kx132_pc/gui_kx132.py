@@ -1,30 +1,57 @@
-#/usr/bin/python3  #! check again why this should be here
+#!/usr/bin/python3
+
+# any changes to the underlying C-File need to be recompiled
+
+# for passing c-type strings use: (bytes("HALLO\n", 'utf-8'))
 
 
-# compile with: " gcc -fPIC -shared -o $NAME_OF_FILE$.so $NAME_OF_FILE$.c "
-# any changes to the C-File need to be recompiled
+import  threading
+import  os
+import  paramiko #ssh
+import  ctypes
+from    numpy.ctypeslib import ndpointer
 
-#! for passing c-type strings: (bytes("HALLO\n", 'utf-8'))
+import  time
+from    datetime import datetime
 
-import threading
-import subprocess #TODO ???? do i need this
-import sys
-import os
-import paramiko #ssh
-import ctypes
-from numpy.ctypeslib import ndpointer
-
-import time
-from datetime import datetime
-
-import tkinter as tk            #TODO: import needed things only. othrwise namespace is flooded.
-from tkinter.filedialog import askdirectory
-from tkinter import messagebox
-from tkinter import TRUE, FALSE
-from tkinter import RIGHT, LEFT, CENTER
-from tkinter import font
+import  tkinter as tk
+from    tkinter import font
+from    tkinter import messagebox
+from    tkinter import TRUE, FALSE
+from    tkinter import RIGHT, LEFT, CENTER
+from    tkinter.filedialog import askdirectory
 
 
+##-------------------------------------------------------------------
+##--- DEFAULTS FOR GUI  ---------------------------------------------
+##------------------------------------------------------------------- 
+
+# if you want to change these, please use the keys from the underlying dictionaries
+
+### GENERAL CONFIG
+useModeDefault      = "Trigger"
+frequencyDefault    = "25600 Hz"
+readModeDefault     = "synchroner Lesemodus"
+gRangeDefault       = "8 g"
+
+### TRIGGER CONFIG
+triggerModeDefault  = "relativ"
+edgeModeDefault     = "beide"
+logicDefault        = "AND"   
+bitmaskDefault      = "X"
+
+timeBeforeDefault   = 1
+timeAfterDefault    = 10
+xThresDefault       = 8000
+yThresDefault       = 8000
+zThresDefault       = 8000
+
+### PATH
+directoryDefault    = ".\output\\"
+filenameDefault     = "kx132_output"
+
+### IP
+rpi_ip_Default      = "100.200.150.42"  
 
 
 
@@ -34,7 +61,7 @@ from tkinter import font
 
 modeDict = {
     "Stream"    : " -mode stream",
-    "Triggered" : " -mode trig",
+    "Trigger"   : " -mode trig",
 }
 
 odrDict = {
@@ -57,14 +84,14 @@ odrDict = {
 }
 
 resolutionDict = {
-    #"8-Bit"  : " -res 8",   # 8-Bit Resolution not implemented. In case it is needed later, i left it in.
+#   "8-Bit"  : " -res 8",                                           # 8-Bit Resolution not implemented. In case it is needed later, i left it in.
     "16-Bit" : " -res 16",
 }
 
 readModeDict = {
-    "Synchronous Read"                      : " -read sync0",
-    #"Synchronous Read (Hardware Interrupt)" : " -read sync1",  # Not Implemented. In case it is needed later i left it in.
-    "Asynchronous Read"                     : " -read async",
+    "synchroner Lesemodus"                      : " -read sync0",
+#   "Synchronous Read (Hardware Interrupt)"     : " -read sync1",   # Not Implemented. In case it is needed later i left it in.
+    "asynchroner Lesemodus"                     : " -read async",
 }
 
 gRangeDict = {
@@ -75,14 +102,14 @@ gRangeDict = {
 }
 
 triggerModeDict = {
-    "offset"    : " -trig offset",
-    "fixed"     : " -trig fixed",
+    "relativ"   : " -trig offset",
+    "fest"      : " -trig fixed",
 }
 
 edgeDetectDict = {
-    "positive" : " -edge pos",
-    "negative" : " -edge neg",
-    "both"     : " -edge both",
+    "steigend"  : " -edge pos",
+    "fallend"   : " -edge neg",
+    "beide"     : " -edge both",
 }
 
 triggerLogicDict = {
@@ -136,8 +163,6 @@ piSSH           = paramiko.SSHClient()
 
 tcp = ""
 
-# RaspberryPi_IP  = "100.200.150.42"
-
 
 ##-------------------------------------------------------------------
 ##--- Function Definitions  -----------------------------------------
@@ -152,36 +177,33 @@ def kx132(initConfig, triggerConfig, outputPathStr, outputNameStr, raspberryPi_I
 
     if (ssh_init_kx132(initConfig, triggerConfig, raspberryPi_IP)):
 
-        tcp_c_lib_path = ".\\tcp_multi_win.so"
+        # path of tcp-implementation
+        tcp_c_lib_path = ".\\tcp_kx132_windows.so"
         tcp = ctypes.CDLL(tcp_c_lib_path)
 
-        # Need to specify return type of c-funtion to pointer
+        # need to specify return type of c-function to pointer
         tcp.tcp_single_read.restype         = ndpointer(dtype=ctypes.c_int16, shape=(3,))
         tcp.tcp_read_uint32.restype         = ndpointer(dtype=ctypes.c_uint32, shape=(1,))
 
+        # start tcp connection
         tcp.tcp_init(bytes(raspberryPi_IP, 'utf-8'))
 
         readThread = threading.Thread(target=tcp_read_data, args=(initConfig[MODE_INDEX], outputPathStr, outputNameStr))
-        # sendThread = threading.Thread(target=tcp_send)
 
         # this should enable to kill the threads, if keyboard interrupt kills main
         readThread.daemon = True
-        # sendThread.daemon = True
-
         readThread.start()
-        # sendThread.start()
-
         readThread.join()
-        # sendThread.join()
 
         tcp.tcp_close()
 
-        print("All TCP threads terminated. Program finished.\n")
+        print("All TCP threads terminated. Measurement finished.\n")
 
 
 def getOffsetThresholdFlags(thresholdList):
-    negBoundary = 0 #uint16_t
-    posBoundary = 65536  #uint16_t
+    negBoundary = 0         #uint16_t
+    posBoundary = 65536     #uint16_t
+
     for i in range (len(thresholdList)):
         if not( negBoundary <= thresholdList[i] <= posBoundary):
             print(f"[warning] Threshold #{i+1} was set out of boundary [{negBoundary} - {posBoundary}]. It will be set to +32000.")
@@ -189,9 +211,12 @@ def getOffsetThresholdFlags(thresholdList):
 
     return f' -xO {thresholdList[X_INDEX]} -yO {thresholdList[Y_INDEX]} -zO {thresholdList[Z_INDEX]}' 
 
+
 def getFixedThresholdFlags(thresholdList):
-    negBoundary = -32768 #int16_t
-    posBoundary = 32767  #int16_t
+
+    negBoundary = -32768    #int16_t
+    posBoundary = 32767     #int16_t
+
     for i in range (len(thresholdList)):
         if not( negBoundary <= thresholdList[i] <= posBoundary):
             print(f"[warning] Threshold #{i+1} was set out of boundary [{negBoundary} - {posBoundary}]. It will be set to +32000.")
@@ -199,8 +224,10 @@ def getFixedThresholdFlags(thresholdList):
 
     return f' -xF {thresholdList[X_INDEX]} -yF {thresholdList[Y_INDEX]} -zF {thresholdList[Z_INDEX]}'    
 
+
 def getTimeFlags(timeList):
     return f' -t1 {timeList[0]} -t2 {timeList[1]}'  
+
 
 def getInitFlags(initConfig):
     mode            = modeDict              [initConfig[MODE_INDEX]]
@@ -229,16 +256,19 @@ def getTriggerFlags(triggerConfig):
     thresholdList.append(triggerConfig[Y_THRES_INDEX])
     thresholdList.append(triggerConfig[Z_THRES_INDEX])
 
-    if(triggerConfig[TRIG_MODE_INDEX] == 'offset'):
+    if(triggerConfig[TRIG_MODE_INDEX] == 'relativ'):
         thres = getOffsetThresholdFlags(thresholdList)
-    elif(triggerConfig[TRIG_MODE_INDEX] == 'fixed'):
+    elif(triggerConfig[TRIG_MODE_INDEX] == 'fest'):
         thres = getFixedThresholdFlags(thresholdList)
 
     triggerString = trig + edge + logic + bitmask + time + thres
 
     return triggerString
 
+
 def ssh_init_kx132(initConfig, triggerConfig, raspberryPi_IP):
+
+   
     
     initString      = getInitFlags(initConfig)
     triggerString   = getTriggerFlags(triggerConfig)
@@ -253,12 +283,16 @@ def ssh_init_kx132(initConfig, triggerConfig, raspberryPi_IP):
     piSSH.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         piSSH.connect(raspberryPi_IP, username='pi', password='pipo', timeout=10)
-        stdin, stdout, stderr = piSSH.exec_command(cmd) #TODO (stderr)? clear that here
-        stdin.channel.shutdown_write()                  #!!! TODO
-        return True
     except:
         print(f"SSH-Connection to {raspberryPi_IP} could not be established. Wrong IP?")
         return False
+
+    killCmd = "sudo killall kx132"  # kill instances in case it is running
+    piSSH.exec_command(killCmd)
+
+    stdin, stdout, stderr = piSSH.exec_command(cmd) #TODO (stderr)? clear that here
+    stdin.channel.shutdown_write()                  #!!! TODO
+    return True
 
 
     
@@ -276,7 +310,6 @@ def tcp_quit():
 
     exitCmd = bytes("exit", 'utf-8')
     tcp.tcp_send(exitCmd)
-    # tcp.tcp_close()
 
 
 def tcp_read_data(modeConfig, outputPath, outputName):
@@ -324,14 +357,15 @@ def tcp_read_data(modeConfig, outputPath, outputName):
                 arrayOut = tcp.tcp_single_read()
                 # print(f'{arrayOut}     #{count}')
 
-                file.write(f'{count:>6},{arrayOut[X_INDEX]:>6},{arrayOut[Y_INDEX]:>6},{arrayOut[Z_INDEX]:>6}\n')
+                if(count != 1):
+                    file.write(f'{count:>6},{arrayOut[X_INDEX]:>6},{arrayOut[Y_INDEX]:>6},{arrayOut[Z_INDEX]:>6}\n')
 
                 count += 1
 
         tcp_quit()
 
 
-    elif(modeConfig == 'Triggered'):
+    elif(modeConfig == 'Trigger'):
         normalizedData  = []
         bufferSize      = []
         formattedData   = []
@@ -424,9 +458,8 @@ def tcp_read_data(modeConfig, outputPath, outputName):
                         yData = arrayOut[Y_INDEX]
                         zData = arrayOut[Z_INDEX]
 
-
                         # print(f'#{i:>5}#   {xData:>6},{yData:>6},{zData:>6}')
-                        
+
                         file.write(f'{(i+1):>6},{xData:>6},{yData:>6},{zData:>6}\n')
 
                     file.write(f'\n')
@@ -435,8 +468,9 @@ def tcp_read_data(modeConfig, outputPath, outputName):
 
                     main.toggleTriggerSignal()
 
-    return
+        tcp_quit()
 
+    return
 
 
 def tcp_send():
@@ -453,6 +487,7 @@ def tcp_send():
             runThreads = False
         exit()
 
+
 def tcp_send_from_button(string):
     global tcp
 
@@ -462,7 +497,7 @@ def tcp_send_from_button(string):
         
 
 ##-------------------------------------------------------------------
-##--- TkInter  ---------------------------------------------------------
+##--- TkInter  ------------------------------------------------------
 ##-------------------------------------------------------------------
 class mainWindow:
     def __init__(self, root):
@@ -470,6 +505,8 @@ class mainWindow:
 
         root.geometry('1100x600')
         root.title('KX132 Accelerometer GUI')
+        root.protocol("WM_DELETE_WINDOW",self.quitButton)
+
 
         ##-----------------------------------------------------------
         ##  FRAMES
@@ -488,8 +525,6 @@ class mainWindow:
         self.TrigFrame.place    (x=25,y=160)
         self.PathFrame.place    (x=25,y=380)
         self.ButtonFrame.place  (x=25,y=480)
-        # self.ButtonFrame.place  (x=25,y=380)
-        # self.PathFrame.place    (x=25,y=520)
 
 
         ##-----------------------------------------------------------
@@ -508,11 +543,11 @@ class mainWindow:
         self.switchReadModeVar          = tk.StringVar()
         self.gRangeVar                  = tk.StringVar()
 
-        self.switchModeVar.set          ('Triggered')
-        self.switchODRVar.set           ('25600 Hz')
+        self.switchModeVar.set          (useModeDefault)
+        self.switchODRVar.set           (frequencyDefault)
         self.switchResolutionVar.set    ('16-Bit')
-        self.switchReadModeVar.set      ('Synchronous Read')
-        self.gRangeVar.set              ('8 g')
+        self.switchReadModeVar.set      (readModeDefault)
+        self.gRangeVar.set              (gRangeDefault)
 
         self.switchModeChoices          = list(modeDict.keys())
         self.switchODRChoices           = list(odrDict.keys())
@@ -534,15 +569,15 @@ class mainWindow:
         self.zThresholdValue            = tk.IntVar()
         self.trigDetectSignal           = tk.StringVar()
         
-        self.trigModeVar.set            ('offset')
-        self.edgeDetVar.set             ('both')
-        self.trigLogicVar.set           ("AND")
-        self.trigBitmaskVar.set         ("X")
-        self.timeBeforeTrig.set         (1)
-        self.timeAfterTrig.set          (10)
-        self.xThresholdValue.set        (8000)
-        self.yThresholdValue.set        (8000)
-        self.zThresholdValue.set        (8000)
+        self.trigModeVar.set            (triggerModeDefault)
+        self.edgeDetVar.set             (edgeModeDefault)
+        self.trigLogicVar.set           (logicDefault)
+        self.trigBitmaskVar.set         (bitmaskDefault)
+        self.timeBeforeTrig.set         (timeBeforeDefault)
+        self.timeAfterTrig.set          (timeAfterDefault)
+        self.xThresholdValue.set        (xThresDefault)
+        self.yThresholdValue.set        (yThresDefault)
+        self.zThresholdValue.set        (zThresDefault)
         self.trigDetectSignal.set       ('FALSE')
 
         self.trigModeChoices            = list(triggerModeDict.keys())
@@ -560,9 +595,9 @@ class mainWindow:
         self.outputNameVar              = tk.StringVar()
         self.raspberryPi_IP             = tk.StringVar()
 
-        self.outputPathVar.set          (".\output\\")
-        self.outputNameVar.set          ("kx132_output")      
-        self.raspberryPi_IP.set         ("100.200.150.42")      
+        self.outputPathVar.set          (directoryDefault)
+        self.outputNameVar.set          (filenameDefault)      
+        self.raspberryPi_IP.set         (rpi_ip_Default)      
         
 
 
@@ -606,15 +641,15 @@ class mainWindow:
         self.TrigModeLabel              = tk.Label(self.TrigFrame, text='Trigger-Modus',                padx=10)
         self.EdgeLabel                  = tk.Label(self.TrigFrame, text='Flankenerkennung',             padx=10)
         self.trigLogicLabel             = tk.Label(self.TrigFrame, text='Logik',                        padx=10)
-        self.trigBitmaskLabel           = tk.Label(self.TrigFrame, text='Bitmaske',                     padx=10)
+        self.trigBitmaskLabel           = tk.Label(self.TrigFrame, text='Bitmaske (Logik)',             padx=10)
         self.timeBeforeLabel            = tk.Label(self.TrigFrame, text='Zeit vor Trigger (ms)',        padx=10)
         self.timeAfterLabel             = tk.Label(self.TrigFrame, text='Zeit nach Trigger (ms)',       padx=10)
-        self.xThresLabel                = tk.Label(self.TrigFrame, text='X-Threshold',                  padx=10)
-        self.yThresLabel                = tk.Label(self.TrigFrame, text='Y-Threshold',                  padx=10)
-        self.zThresLabel                = tk.Label(self.TrigFrame, text='Z-Threshold',                  padx=10)
-        self.xNormalLabel               = tk.Label(self.TrigFrame, text='X-Normalized',                 padx=10)
-        self.yNormalLabel               = tk.Label(self.TrigFrame, text='Y-Normalized',                 padx=10)
-        self.zNormalLabel               = tk.Label(self.TrigFrame, text='Z-Normalized',                 padx=10)
+        self.xThresLabel                = tk.Label(self.TrigFrame, text='X-Schwellwert',                padx=10)
+        self.yThresLabel                = tk.Label(self.TrigFrame, text='Y-Schwellwert',                padx=10)
+        self.zThresLabel                = tk.Label(self.TrigFrame, text='Z-Schwellwert',                padx=10)
+        self.xNormalLabel               = tk.Label(self.TrigFrame, text='X-Normalisiert',               padx=10)
+        self.yNormalLabel               = tk.Label(self.TrigFrame, text='Y-Normalisiert',               padx=10)
+        self.zNormalLabel               = tk.Label(self.TrigFrame, text='Z-Normalisiert',               padx=10)
         self.detectHeaderLabel          = tk.Label(self.TrigFrame, text='Trigger',                      padx=10)
         self.countHeaderLabel           = tk.Label(self.TrigFrame, text='Anzahl Trigger',               padx=10)          
 
@@ -704,7 +739,6 @@ class mainWindow:
         self.rpiIPLabel                 = tk.Label(self.ButtonFrame,    text='\nRaspberryPi')
         self.rpiIPEntry                 = tk.Entry(self.ButtonFrame,    textvariable=self.raspberryPi_IP, width = 15, justify=CENTER)
 
-        # self.ButtonHeader.grid          (row=0, column=0)
         self.rpiIPLabel.grid            (row=0, column=4)
         self.statusLabel.grid           (row=0, column=5)
 
@@ -722,7 +756,6 @@ class mainWindow:
         trigger = self.trigDetectSignal.get()
 
         if(trigger == 'FALSE'):
-            # print('Trigger Detected.')
             self.trigDetectSignal.set('TRUE')
             self.trigDetectLabel.config(text=self.trigDetectSignal.get(), fg='green')
 
@@ -753,7 +786,7 @@ class mainWindow:
 
     def stopButton(self):
         global runThreads
-        print("Stopping Program.")
+        print("Stopping Measurement.")
 
         runThreads = False
 
@@ -790,7 +823,7 @@ class mainWindow:
         global triggerCount
 
         if(runThreads):
-            print('Program already running.')
+            print('Program is already running.')
             return
 
         firstTrigCycle = True
@@ -829,6 +862,8 @@ class mainWindow:
             tcp_quit()
         except:
             print("TCP-Socket couldn't be closed. Probably not started in the first place.")
+
+        ssh_close_kx132()
 
         root.quit()
         exit()

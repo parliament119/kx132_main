@@ -148,7 +148,7 @@ static bool detectFixedTrigger(axis_t axis, int16_t formattedData, edge_detectio
             
             /// Works with absolute values, hence detects both directions.
             case detectBoth:
-                if(abs(triggerData->fixedThresholds[axis]) > abs(triggerData->normalizedData[axis])){
+                if(abs(triggerData->fixedThresholds[axis]) >= abs(triggerData->normalizedData[axis])){
                     triggerDetected = abs(formattedData) >= abs(triggerData->fixedThresholds[axis]);
                 }
                 else if(abs(triggerData->fixedThresholds[axis]) < abs(triggerData->normalizedData[axis])){

@@ -196,15 +196,12 @@ void kx132_streaming_mode(readMode_hw_t readMode){
     //-------------------------------------------------------------------
 
     uint8_t     xyzRawData      [NUMBER_OF_CHANNELS];
-    int16_t     xyzFormatted    [2][NUMBER_OF_AXES];
-
+    int16_t     xyzFormatted    [NUMBER_OF_AXES];
     uint64_t    count           = 0;
-    uint8_t     activeBuffer    = 0;
 
 
     for(uint8_t i = 0; i < NUMBER_OF_AXES; i++){
-        xyzFormatted[0][i] = 0;
-        xyzFormatted[1][i] = 0;
+        xyzFormatted[i] = 0;
     }
 
 
@@ -223,23 +220,22 @@ void kx132_streaming_mode(readMode_hw_t readMode){
             kx132_async_read_raw_data(xyzRawData);
         }
         
-        convertRawArray(xyzRawData, xyzFormatted[activeBuffer]);
+        convertRawArray(xyzRawData, xyzFormatted);
         
 
         #ifdef DEBUG_PRINT_STREAM_DATA
             printf("|X: %6.d   |Y: %6.d   |Z: %6.d   | #%d\n",
-                    xyzFormatted[!activeBuffer][X_INDEX],
-                    xyzFormatted[!activeBuffer][Y_INDEX],
-                    xyzFormatted[!activeBuffer][Z_INDEX], count);
+                    xyzFormatted[X_INDEX],
+                    xyzFormatted[Y_INDEX],
+                    xyzFormatted[Z_INDEX], count);
         #endif //DEBUG_PRINT_STREAM_DATA
 
 
         #ifdef TCP_SERVER
-            tcp_send(xyzFormatted[!activeBuffer]);
+            tcp_send(xyzFormatted);
         #endif //TCP_SERVER
 
 
-        activeBuffer = !activeBuffer;
 
         count++;
     }

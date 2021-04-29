@@ -9,12 +9,12 @@ OBJDIR=./build
 LIBDIR=./lib
 BUILDDIR=./build
 
-LIBS=-li2c -lbcm2835 -lpthread -lm
+LIBS= -lbcm2835 -lpthread -lm
 
-_DEPS = regs_kx132.h drv_kx132.h i2c_wrapper.h ringbuffer.h trigger.h config_kx132.h macros_kx132.h utility.h spi_wrapper.h tcp.h debug_macros.h
+_DEPS = regs_kx132.h drv_kx132.h ringbuffer.h trigger.h config_kx132.h macros_kx132.h utility.h spi_wrapper.h tcp.h debug_macros.h
 DEPS = $(patsubst %,$(INCLUDEDIR)/%,$(_DEPS))
 
-_OBJ = main.o drv_kx132.o i2c_wrapper.o ringbuffer.o trigger.o config_kx132.o utility.o spi_wrapper.o tcp.o
+_OBJ = main.o drv_kx132.o  ringbuffer.o trigger.o config_kx132.o utility.o spi_wrapper.o tcp.o
 OBJ = $(patsubst %,$(OBJDIR)/%,$(_OBJ))
 
 
