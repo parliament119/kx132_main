@@ -173,7 +173,7 @@ void kx132_config_init(uint16_t argc, char *argv[], kx132_config_t *kx132_config
         processInitFlags(argc, argv, mainConfig, triggerConfig, triggerData);
     }
 
-    setTriggerTimeSamples(triggerConfig->triggerInfo, mainConfig->outputDataRate_hw,);
+    setTriggerTimeSamples(triggerConfig->triggerInfo, mainConfig->outputDataRate_hw);
 
 }
 
@@ -507,7 +507,7 @@ bool processRuntimeFlags(char *data, trigger_config_t* triggerConfig, trigger_da
             strPtr = strtok (NULL, " ");
             if(sscanf(strPtr, "%d", &intArgValue) == 1){
                 triggerConfig->triggerInfo->timeBeforeTrig = intArgValue;
-                setTriggerTimeSamplesBefore(outputDataRate, triggerConfig->triggerInfo);
+                setTriggerTimeSamplesBefore(triggerConfig->triggerInfo, outputDataRate);
             }
         }
 
@@ -515,7 +515,7 @@ bool processRuntimeFlags(char *data, trigger_config_t* triggerConfig, trigger_da
             strPtr = strtok (NULL, " ");
             if(sscanf(strPtr, "%d", &intArgValue) == 1){
                 triggerConfig->triggerInfo->timeAfterTrig = intArgValue;
-                setTriggerTimeSamplesAfter(outputDataRate, triggerConfig->triggerInfo);
+                setTriggerTimeSamplesAfter(triggerConfig->triggerInfo, outputDataRate);
             }
         }
 
