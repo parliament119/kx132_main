@@ -274,7 +274,7 @@ def ssh_init_kx132(initConfig, triggerConfig, raspberryPi_IP):
     triggerString   = getTriggerFlags(triggerConfig)
 
     flags = initString + triggerString
-    cmd = "sudo /home/pi/Documents/kx132_main/build/./kx132" + flags
+    cmd = "sudo /home/kx132/build/./kx132" + flags
     print(cmd)
     print()
 
